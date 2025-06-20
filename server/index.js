@@ -4,6 +4,7 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const axios = require("axios");
+const cors = require("cors");
 const { generateInstallUrl, getAccessToken } = require("./shopify");
 
 const app = express();
