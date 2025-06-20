@@ -8,7 +8,8 @@ const app = express();
 app.use(cookieParser());
 app.use(express.json());
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
+//const PORT = 3001;
 
 // ✅ Start Auth Flow
 app.get('/api/auth', (req, res) => {
@@ -38,7 +39,7 @@ app.get('/api/auth/callback', async (req, res) => {
 // app.listen(PORT, () => {
 //   console.log(`Server running at http://localhost:${PORT}`);
 // });
-const PORT = process.env.PORT || 3001;
+
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
