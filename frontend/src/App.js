@@ -1,60 +1,55 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import ProductList from "./components/ProductList";
+// import ProductEditor from "./components/ProductEditor"; // Uncomment when created
+
 import {
   AppProvider,
   Page,
-  Card,
   Layout,
+  Card,
   Text,
-  Spinner,
 } from "@shopify/polaris";
 import "@shopify/polaris/build/esm/styles.css";
-import axios from "axios";
 
 function App() {
-  const [shop, setShop] = useState(null);
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    const shopParam = url.searchParams.get("shop");
-    if (!shopParam) return;
-
-    setShop(shopParam);
-
-    axios
-      .get(`https://your-backend-url.onrender.com/api/products`, {
-        withCredentials: true,
-      })
-      .then((res) => {
-        setProducts(res.data.products);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching products", err);
-        setLoading(false);
-      });
-  }, []);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   return (
     <AppProvider>
       <Page title="Shopify SEO Optimizer">
-        {loading ? (
-          <Spinner />
-        ) : (
-          <Layout>
-            <Layout.Section>
-              <Card>
-                <Text variant="headingMd">Fetched {products.length} products</Text>
-                <ul>
-                  {products.map((p) => (
-                    <li key={p.id}>{p.title}</li>
-                  ))}
-                </ul>
-              </Card>
-            </Layout.Section>
-          </Layout>
-        )}
+        <Layout>
+          <Layout.Section>
+            <Card>
+              <Text variant="headingMd">
+                {selectedProduct ? "Edit Product SEO" : "Select a Product"}
+              </Text>
+            </Card>
+            <Card>
+              {!selectedProduct ? (
+                <ProductList onSelectProduct={(p) => setSelectedProduct(p)} />
+              ) : (
+                <div style={{ padding: "1rem" }}>
+                  <p>🛠 ProductEditor coming soon...</p>
+                  <button
+                    style={{
+                      marginTop: "1rem",
+                      background: "#5c6ac4",
+                      color: "#fff",
+                      padding: "6px 12px",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => setSelectedProduct(null)}
+                  >
+                    ← Back to Product List
+                  </button>
+                </div>
+                // <ProductEditor product={selectedProduct} goBack={() => setSelectedProduct(null)} />
+              )}
+            </Card>
+          </Layout.Section>
+        </Layout>
       </Page>
     </AppProvider>
   );

@@ -5,6 +5,7 @@ const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const axios = require("axios");
 const cors = require("cors");
+
 const { generateInstallUrl, getAccessToken } = require("./shopify");
 
 const app = express();
@@ -129,6 +130,34 @@ app.post("/api/update-product", async (req, res) => {
     res.status(500).json({ error: "Failed to update product" });
   }
 });
+
+// ✅ Get Product from Shopify Admin API
+app.get("/api/products", async (req, res) => {
+  const { shop, accessToken } = req.session;
+
+  if (!shop || !accessToken) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const response = await axios.get(
+      `https://${shop}/admin/api/2024-04/products.json?limit=50`,
+      {
+        headers: {
+          "X-Shopify-Access-Token": accessToken,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const products = response.data.products;
+    res.json({ products });
+  } catch (err) {
+    console.error("❌ Error fetching products:", err.response?.data || err.message);
+    res.status(500).json({ error: "Failed to fetch products from Shopify" });
+  }
+});
+
 
 // ✅ Server Start
 app.listen(PORT, () => {
