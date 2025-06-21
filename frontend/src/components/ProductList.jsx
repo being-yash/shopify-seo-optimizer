@@ -40,7 +40,7 @@ export default function ProductList({ onSelectProduct }) {
     );
   }
 
-  if (!products.length) {
+  if (!products || products.length === 0) {
     return (
       <EmptySearchResult
         title="No products found"
