@@ -14,9 +14,14 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.use(cors({
-  origin: ["https://shopify-seo-optimizer.vercel.app"],
+  origin: [
+    "https://shopify-seo-optimizer.vercel.app",
+    "https://shopify-seo-optimizer-git-main-beingyashs-projects.vercel.app", // 👈 Add this
+    "http://localhost:5173"
+  ],
   credentials: true,
 }));
+
 
 // Setup session
 app.use(session({
