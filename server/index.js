@@ -1,34 +1,35 @@
-// server/index.js
 require("dotenv").config();
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const axios = require("axios");
 const cors = require("cors");
-
 const { generateInstallUrl, getAccessToken } = require("./shopify");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Middleware
 app.use(cookieParser());
 app.use(express.json());
 
 app.use(cors({
-  origin: ['https://shopify-seo-optimizer.vercel.app'],
+  origin: ["https://shopify-seo-optimizer.vercel.app"],
   credentials: true,
 }));
 
-// Setup session storage (can later switch to DB store)
-app.use(
-  session({
-    secret: process.env.COOKIE_SECRET || "defaultsecret",
-    resave: false,
-    saveUninitialized: false,
-  })
-);
+// Setup session
+app.use(session({
+  secret: process.env.COOKIE_SECRET || "defaultsecret",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: true,
+    sameSite: "none",
+  },
+}));
 
-// ✅ Start Auth Flow
+// ✅ OAuth Step 1: Redirect to install
 app.get("/api/auth", (req, res) => {
   const { shop } = req.query;
   if (!shop) return res.status(400).send("Shop required");
@@ -37,24 +38,52 @@ app.get("/api/auth", (req, res) => {
   res.redirect(installUrl);
 });
 
-// ✅ Callback Handler
+// ✅ OAuth Step 2: Handle callback
 app.get("/api/auth/callback", async (req, res) => {
   const { shop, code } = req.query;
 
   try {
     const accessToken = await getAccessToken(shop, code);
 
-    // ✅ Store in session (recommended over cookie for auth)
     req.session.shop = shop;
     req.session.accessToken = accessToken;
 
+    console.log("✅ Auth successful:", { shop });
     res.redirect(`https://shopify-seo-optimizer.vercel.app/?shop=${shop}`);
   } catch (err) {
+    console.error("❌ Auth error:", err.message);
     res.status(500).send("Auth Error: " + err.message);
   }
 });
 
-// ✅ Generate SEO using Gemini
+// ✅ Get all products
+app.get("/api/products", async (req, res) => {
+  const { shop, accessToken } = req.session;
+  console.log("🔍 Session on /api/products:", { shop, hasToken: !!accessToken });
+
+  if (!shop || !accessToken) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const response = await axios.get(
+      `https://${shop}/admin/api/2024-04/products.json?limit=50`,
+      {
+        headers: {
+          "X-Shopify-Access-Token": accessToken,
+        },
+      }
+    );
+
+    const products = response.data.products;
+    res.json({ products });
+  } catch (err) {
+    console.error("❌ Product fetch failed:", err.response?.data || err.message);
+    res.status(500).json({ error: "Failed to fetch products from Shopify" });
+  }
+});
+
+// ✅ Generate SEO content via Gemini
 app.post("/api/generate-seo", async (req, res) => {
   const { title, description } = req.body;
 
@@ -96,12 +125,12 @@ app.post("/api/generate-seo", async (req, res) => {
 
     res.json({ title: seoTitle, description: seoDescription });
   } catch (err) {
-    console.error("Gemini API Error:", err.response?.data || err.message);
+    console.error("❌ Gemini API Error:", err.response?.data || err.message);
     res.status(500).json({ error: "Failed to generate SEO content" });
   }
 });
 
-// ✅ Update Product via Shopify Admin API
+// ✅ Update Shopify Product
 app.post("/api/update-product", async (req, res) => {
   const { id, title, description } = req.body;
   const { shop, accessToken } = req.session;
@@ -126,40 +155,12 @@ app.post("/api/update-product", async (req, res) => {
 
     res.json({ success: true, product: updateRes.data.product });
   } catch (err) {
-    console.error("Shopify Update Error:", err.response?.data || err.message);
+    console.error("❌ Product update failed:", err.response?.data || err.message);
     res.status(500).json({ error: "Failed to update product" });
   }
 });
 
-// ✅ Get Product from Shopify Admin API
-app.get("/api/products", async (req, res) => {
-  const { shop, accessToken } = req.session;
-
-  if (!shop || !accessToken) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  try {
-    const response = await axios.get(
-      `https://${shop}/admin/api/2024-04/products.json?limit=50`,
-      {
-        headers: {
-          "X-Shopify-Access-Token": accessToken,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const products = response.data.products;
-    res.json({ products });
-  } catch (err) {
-    console.error("❌ Error fetching products:", err.response?.data || err.message);
-    res.status(500).json({ error: "Failed to fetch products from Shopify" });
-  }
-});
-
-
-// ✅ Server Start
+// ✅ Start server
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });

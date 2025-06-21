@@ -8,7 +8,6 @@ import {
   Spinner,
   EmptySearchResult,
 } from "@shopify/polaris";
-//blank line
 
 export default function ProductList({ onSelectProduct }) {
   const [products, setProducts] = useState([]);
@@ -18,11 +17,14 @@ export default function ProductList({ onSelectProduct }) {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("/api/products", { withCredentials: true });
-        setProducts(res.products);
-        console.log(res.products);
+        const res = await axios.get("https://your-backend-url.onrender.com/api/products", {
+          withCredentials: true,
+        });
+
+        setProducts(res.data.products); // ✅ CORRECTED
+        console.log("✅ Products:", res.data.products);
       } catch (err) {
-        console.error("Error fetching products:", err);
+        console.error("❌ Error fetching products:", err.response?.data || err.message);
       } finally {
         setLoading(false);
       }
