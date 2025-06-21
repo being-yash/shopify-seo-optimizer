@@ -17,7 +17,7 @@ export default function ProductList({ onSelectProduct }) {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("https://your-backend-url.onrender.com/api/products", {
+        const res = await axios.get("https://shopify-seo-optimizer.onrender.com/api/products", {
           withCredentials: true,
         });
 
