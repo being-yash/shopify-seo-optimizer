@@ -8,6 +8,7 @@ import {
   Spinner,
   EmptySearchResult,
 } from "@shopify/polaris";
+//blank line
 
 export default function ProductList({ onSelectProduct }) {
   const [products, setProducts] = useState([]);
