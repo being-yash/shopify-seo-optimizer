@@ -13,6 +13,7 @@ import "@shopify/polaris/build/esm/styles.css";
 
 function App() {
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const token = url.searchParams.get("token");
 
   return (
     <AppProvider>

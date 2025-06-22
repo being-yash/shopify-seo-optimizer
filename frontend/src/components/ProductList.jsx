@@ -10,6 +10,7 @@ import {
 } from "@shopify/polaris";
 
 export default function ProductList({ onSelectProduct }) {
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -17,7 +18,10 @@ export default function ProductList({ onSelectProduct }) {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("https://shopify-seo-optimizer.onrender.com/api/products", {
+        const res = await axios.get(`${backendUrl}/api/products?shop=${shopParam}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           withCredentials: true,
         });
 

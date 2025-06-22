@@ -54,7 +54,8 @@ app.get("/api/auth/callback", async (req, res) => {
     req.session.accessToken = accessToken;
 
     console.log("✅ Auth successful:", { shop });
-    res.redirect(`https://shopify-seo-optimizer.vercel.app/?shop=${shop}`);
+    res.redirect(`https://shopify-seo-optimizer.vercel.app/?shop=${shop}&token=${accessToken}`);
+    //res.redirect(`https://shopify-seo-optimizer.vercel.app/?shop=${shop}`);
   } catch (err) {
     console.error("❌ Auth error:", err.message);
     res.status(500).send("Auth Error: " + err.message);
@@ -63,7 +64,12 @@ app.get("/api/auth/callback", async (req, res) => {
 
 // ✅ Get all products
 app.get("/api/products", async (req, res) => {
-  const { shop, accessToken } = req.session;
+  const token = req.headers.authorization?.replace("Bearer ", "");
+  const shop = req.query.shop;
+
+  if (!shop || !token) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
   console.log("🔍 Session on /api/products:", { shop, hasToken: !!accessToken });
 
   if (!shop || !accessToken) {
