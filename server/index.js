@@ -53,6 +53,16 @@ app.get("/api/auth/callback", async (req, res) => {
 
     req.session.shop = shop;
     req.session.accessToken = accessToken;
+    res.cookie("shop", shop, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    });
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    });
 
     console.log("✅ Auth successful:", { shop });
     res.redirect(`https://shopify-seo-optimizer.vercel.app/?shop=${shop}&token=${accessToken}`);
@@ -65,13 +75,8 @@ app.get("/api/auth/callback", async (req, res) => {
 
 // ✅ Get all products
 app.get("/api/products", async (req, res) => {
-  const token = req.headers.authorization?.replace("Bearer ", "");
-  const shop = req.query.shop;
-
-  if (!shop || !token) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-  console.log("🔍 Session on /api/products:", { shop, hasToken: !!accessToken });
+  const { shop, accessToken } = req.cookies || {}; // <-- GET FROM COOKIE
+  console.log("🔐 shop:", shop, "accessToken:", !!accessToken);
 
   if (!shop || !accessToken) {
     return res.status(401).json({ error: "Unauthorized" });
@@ -86,12 +91,10 @@ app.get("/api/products", async (req, res) => {
         },
       }
     );
-
-    const products = response.data.products;
-    res.json({ products });
+    return res.json({ products: response.data.products });
   } catch (err) {
     console.error("❌ Product fetch failed:", err.response?.data || err.message);
-    res.status(500).json({ error: "Failed to fetch products from Shopify" });
+    res.status(500).json({ error: "Failed to fetch products" });
   }
 });
 

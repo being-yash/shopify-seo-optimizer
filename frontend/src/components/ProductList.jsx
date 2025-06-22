@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Cookies from "js-cookie";
 import {
   Card,
   IndexTable,
@@ -17,8 +18,9 @@ export default function ProductList({ onSelectProduct }) {
   // Fetch products on mount
   useEffect(() => {
     const url = new URL(window.location.href);
-    const shop = localStorage.getItem("shop");
-    const token = localStorage.getItem("token");
+    // ✅ Get cookie
+    const shop = Cookies.get("shop");
+    const token = Cookies.get("token");
 
     const fetchProducts = async () => {
       try {
