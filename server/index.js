@@ -50,7 +50,7 @@ app.get("/api/auth/callback", async (req, res) => {
 
   try {
     const accessToken = await getAccessToken(shop, code);
-
+    console.log("✅ Auth successful:", { accessToken });
     req.session.shop = shop;
     req.session.accessToken = accessToken;
     res.cookie("shop", shop, {
