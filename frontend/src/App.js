@@ -13,7 +13,16 @@ import "@shopify/polaris/build/esm/styles.css";
 
 function App() {
   const [selectedProduct, setSelectedProduct] = useState(null);
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const shopParam = url.searchParams.get("shop");
+    const token = url.searchParams.get("token");
 
+    if (shopParam && token) {
+      localStorage.setItem("shop", shopParam);
+      localStorage.setItem("token", token);
+    }
+  }, []);
   return (
     <AppProvider>
       <Page title="Shopify SEO Optimizer">
