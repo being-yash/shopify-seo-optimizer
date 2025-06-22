@@ -103,10 +103,13 @@ app.post("/api/generate-seo", async (req, res) => {
   const { title, description } = req.body;
 
   if (!title || !description) {
+    console.log("❌ Missing fields", { title, description });
     return res.status(400).json({ error: "Missing title or description" });
   }
 
   try {
+    console.log("⚡ Sending to Gemini:", { title, description });
+
     const prompt = `
       Optimize this product for SEO on an ecommerce site.
 
@@ -133,11 +136,12 @@ app.post("/api/generate-seo", async (req, res) => {
     );
 
     const text = geminiRes.data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    console.log("✅ Gemini Response:", text);
 
     const [seoTitleLine, ...descLines] = text.split("\n").filter(Boolean);
     const seoTitle = seoTitleLine.replace(/^Optimized Title:/i, "").trim();
     const seoDescription = descLines.join(" ").replace(/^Meta Description:/i, "").trim();
-    console.log("✅ SEO Generated:", { seoTitle, seoDescription });
+
     res.json({ title: seoTitle, description: seoDescription });
   } catch (err) {
     console.error("❌ Gemini API Error:", err.response?.data || err.message);
