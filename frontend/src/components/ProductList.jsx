@@ -22,7 +22,7 @@ export default function ProductList({ onSelectProduct }) {
 
     const fetchProducts = async () => {
       try {
-        const res = await axios.get(`${backendUrl}/api/products?shop=${shopParam}`, {
+        const res = await axios.get(`${backendUrl}/api/products?shop=${shop}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

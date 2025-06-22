@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProductList from "./components/ProductList";
 // import ProductEditor from "./components/ProductEditor"; // Uncomment when created
 
