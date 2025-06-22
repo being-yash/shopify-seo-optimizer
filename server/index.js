@@ -137,7 +137,7 @@ app.post("/api/generate-seo", async (req, res) => {
     const [seoTitleLine, ...descLines] = text.split("\n").filter(Boolean);
     const seoTitle = seoTitleLine.replace(/^Optimized Title:/i, "").trim();
     const seoDescription = descLines.join(" ").replace(/^Meta Description:/i, "").trim();
-
+    console.log("✅ SEO Generated:", { seoTitle, seoDescription });
     res.json({ title: seoTitle, description: seoDescription });
   } catch (err) {
     console.error("❌ Gemini API Error:", err.response?.data || err.message);

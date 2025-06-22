@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ProductList from "./components/ProductList";
+import ProductEditor from "./components/ProductEditor";
+
 import Cookies from "js-cookie";
 // import ProductEditor from "./components/ProductEditor"; // Uncomment when created
 
@@ -43,24 +45,8 @@ function App() {
               {!selectedProduct ? (
                 <ProductList onSelectProduct={(p) => setSelectedProduct(p)} />
               ) : (
-                <div style={{ padding: "1rem" }}>
-                  <p>🛠 ProductEditor coming soon...</p>
-                  <button
-                    style={{
-                      marginTop: "1rem",
-                      background: "#5c6ac4",
-                      color: "#fff",
-                      padding: "6px 12px",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => setSelectedProduct(null)}
-                  >
-                    ← Back to Product List
-                  </button>
-                </div>
-                // <ProductEditor product={selectedProduct} goBack={() => setSelectedProduct(null)} />
+                <ProductEditor product={selectedProduct} goBack={() => setSelectedProduct(null)} />
+                //<ProductEditor product={selectedProduct} goBack={() => setSelectedProduct(null)} />
               )}
             </Card>
           </Layout.Section>
