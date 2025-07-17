@@ -1,46 +1,62 @@
-// server/index.js
-require('dotenv').config();
-const express = require('express');
-const cookieParser = require('cookie-parser');
-const { generateInstallUrl, getAccessToken } = require('./shopify');
+require("dotenv").config();
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const axios = require("axios");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const connectDB = require("./config/db");
 
 const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Connect MongoDB
+connectDB();
+
+// Middleware
 app.use(cookieParser());
 app.use(express.json());
 
-const PORT = process.env.PORT || 3001;
-//const PORT = 3001;
+app.use(
+  cors({
+    origin: [
+      "https://shopify-seo-optimizer.vercel.app",
+      "https://shopify-seo-optimizer-git-main-beingyashs-projects.vercel.app",
+      "http://localhost:5173",
+    ],
+    credentials: true,
+  })
+);
 
-// ✅ Start Auth Flow
-app.get('/api/auth', (req, res) => {
-  const { shop } = req.query;
-  if (!shop) return res.status(400).send('Shop required');
+app.use(
+  session({
+    secret: process.env.COOKIE_SECRET || "defaultsecret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    },
+  })
+);
 
-  const installUrl = generateInstallUrl(shop);
-  res.redirect(installUrl);
+// Check MongoDB status
+app.get("/api/db-status", (req, res) => {
+  const status = mongoose.connection.readyState; // 1 = connected
+  res.json({
+    status,
+    message: status === 1 ? "MongoDB is connected" : "MongoDB is NOT connected",
+  });
 });
 
-// ✅ Callback Handler
-app.get('/api/auth/callback', async (req, res) => {
-  const { shop, code } = req.query;
+// Shopify OAuth Routes
+const shopifyRoutes = require("./routes/shopifyRoutes");
+app.use("/api", shopifyRoutes);
 
-  try {
-    const accessToken = await getAccessToken(shop, code);
-
-    // You can store accessToken in DB or session/cookie
-    res.cookie('shop', shop);
-    res.cookie('accessToken', accessToken);
-    res.redirect(`https://your-frontend-app-url.com?shop=${shop}`);
-  } catch (err) {
-    res.status(500).send('Auth Error: ' + err.message);
-  }
-});
-
-// app.listen(PORT, () => {
-//   console.log(`Server running at http://localhost:${PORT}`);
-// });
-
+const adminRoutes = require("./routes/adminRoutes");
+app.use("/api/admin", adminRoutes);
+// Start server
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
-
