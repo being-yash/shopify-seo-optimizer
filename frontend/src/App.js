@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ProductList from "./components/ProductList";
 import ProductEditor from "./components/ProductEditor";
+import AdminDashboard from "./admin/AdminDashboard";
+import AddVendor from "./admin/AddVendor";
+import CreateVendor from "./admin/CreateVendor";
+import VendorLogin from "./vendor/VendorLogin";
+import VendorDashboard from "./vendor/VendorDashboard";
+import Header from "./components/shared/Header";
+import Footer from "./components/shared/Footer";
 
 import Cookies from "js-cookie";
-// import ProductEditor from "./components/ProductEditor"; // Uncomment when created
 
 import {
   AppProvider,
@@ -33,25 +40,35 @@ function App() {
   }, []);
   return (
     <AppProvider>
-      <Page title="Shopify SEO Optimizer">
-        <Layout>
-          <Layout.Section>
-            <Card>
-              <Text variant="headingMd">
-                {selectedProduct ? "Edit Product SEO" : "Select a Product"}
-              </Text>
-            </Card>
-            <Card>
-              {!selectedProduct ? (
-                <ProductList onSelectProduct={(p) => setSelectedProduct(p)} />
-              ) : (
-                <ProductEditor product={selectedProduct} goBack={() => setSelectedProduct(null)} />
-                //<ProductEditor product={selectedProduct} goBack={() => setSelectedProduct(null)} />
-              )}
-            </Card>
-          </Layout.Section>
-        </Layout>
-      </Page>
+      <Router>
+        <Header />
+        <Page title="Shopify SEO Optimizer">
+          <Layout>
+            <Layout.Section>
+              <Card>
+                <Text variant="headingMd">
+                  {selectedProduct ? "Edit Product SEO" : "Select a Product"}
+                </Text>
+              </Card>
+              <Card>
+                {!selectedProduct ? (
+                  <ProductList onSelectProduct={(p) => setSelectedProduct(p)} />
+                ) : (
+                  <ProductEditor product={selectedProduct} goBack={() => setSelectedProduct(null)} />
+                )}
+              </Card>
+            </Layout.Section>
+          </Layout>
+        </Page>
+        <Routes>
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/vendors/add" element={<AddVendor />} />
+          <Route path="/admin/vendors/create" element={<CreateVendor />} />
+          <Route path="/vendor/login" element={<VendorLogin />} />
+          <Route path="/vendor/dashboard" element={<VendorDashboard />} />
+        </Routes>
+        <Footer />
+      </Router>
     </AppProvider>
   );
 }
